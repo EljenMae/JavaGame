@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JavaQuest — Daily Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="javaquest.css">
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="glow-orb orb1"></div>
+<div class="glow-orb orb2"></div>
+
+<!-- ── LEVEL UP CELEBRATION OVERLAY ── -->
+<div class="levelup-overlay hidden" id="levelupOverlay">
+  <div class="levelup-card" id="levelupCard">
+    <div class="levelup-particles" id="levelupParticles"></div>
+    <div class="levelup-icon">⚔️</div>
+    <div class="levelup-label">SKILL DETECTED</div>
+    <h2 class="levelup-title" id="levelupTitle">Level Up!</h2>
+    <p class="levelup-subtitle" id="levelupSubtitle">The AI has recognized your growth.</p>
+    <div class="levelup-badge-row">
+      <div class="levelup-from" id="levelupFrom">Beginner</div>
+      <div class="levelup-arrow">→</div>
+      <div class="levelup-to" id="levelupTo">Easy</div>
+    </div>
+    <p class="levelup-desc" id="levelupDesc">Your speed and accuracy earned this upgrade.</p>
+    <button class="levelup-btn" onclick="closeLevelUp()">Keep Questing ⚡</button>
+  </div>
+</div>
+
+<!-- ── AI SKILL INDICATOR (header bar) ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">☕</div>
+    <div class="logo-text">Java<span>Quest</span></div>
+  </div>
+  <div class="header-right">
+    <div class="streak-badge">🔥 <span id="streakCount">0</span> day streak</div>
+    <div class="ai-skill-badge" id="aiSkillBadge" title="AI-detected skill level">
+      <span class="ai-dot"></span>
+      AI: <span id="aiSkillLabel">Calibrating...</span>
+    </div>
+    <div id="authButtons" class="auth-buttons">
+      <button class="btn-auth btn-login" onclick="openModal('login')">Log In</button>
+      <button class="btn-auth btn-signup" onclick="openModal('signup')">Sign Up</button>
+    </div>
+    <div id="userInfo" class="user-info hidden">
+      <div class="user-avatar" id="userAvatar">J</div>
+      <span class="user-name" id="userName">JavaLearner</span>
+      <button class="btn-auth btn-logout" onclick="logout()">Log Out</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── AUTH MODAL ── -->
+<div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="authModal">
+    <div class="modal-header">
+      <div class="modal-logo">
+        <div class="logo-icon small">☕</div>
+        <span class="modal-logo-text">Java<span>Quest</span></span>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tabLogin" onclick="switchTab('login')">Log In</button>
+      <button class="modal-tab" id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <div class="modal-body" id="formLogin">
+      <p class="modal-subtitle">Welcome back, adventurer!</p>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" />
+        <a href="#" class="form-link forgot-link">Forgot password?</a>
+      </div>
+      <div class="form-error hidden" id="loginError">⚠ Invalid email or password.</div>
+      <button class="btn-form-submit" onclick="handleLogin()">Log In →</button>
+      <p class="modal-footer-text">Don't have an account? <a href="#" class="form-link" onclick="switchTab('signup')">Sign up free</a></p>
+    </div>
+    <div class="modal-body hidden" id="formSignup">
+      <p class="modal-subtitle">Start your Java journey today.</p>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" class="form-input" id="signupUsername" placeholder="JavaHero99" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="signupEmail" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="signupPassword" placeholder="Min. 8 characters" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <input type="password" class="form-input" id="signupConfirm" placeholder="••••••••" />
+      </div>
+      <div class="form-error hidden" id="signupError">⚠ Please fill all fields correctly.</div>
+      <button class="btn-form-submit" onclick="handleSignup()">Create Account →</button>
+      <p class="modal-footer-text">Already have an account? <a href="#" class="form-link" onclick="switchTab('login')">Log in</a></p>
+    </div>
+    <div class="modal-body hidden" id="formSuccess">
+      <div class="success-icon">🎉</div>
+      <h3 class="success-title" id="successTitle">Welcome to JavaQuest!</h3>
+      <p class="success-msg" id="successMsg">Your account is ready. Let the quest begin!</p>
+      <button class="btn-form-submit" onclick="closeModal()">Start Questing →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div class="container">
+  <div class="hero">
+    <div class="hero-label">✦ AI-Adaptive Challenge Platform</div>
+    <h1>Master Java.<br><span class="highlight">One Day at a Time.</span></h1>
+    <p>The AI watches your speed &amp; accuracy and automatically adjusts your challenge difficulty as you improve.</p>
+  </div>
+
+  <!-- AI Skill Meter -->
+  <div class="skill-meter-bar" id="skillMeterBar">
+    <div class="skill-meter-inner">
+      <span class="skill-meter-label">🧠 AI Skill Meter</span>
+      <div class="skill-track">
+        <div class="skill-segment" data-level="beginner">Beginner</div>
+        <div class="skill-segment" data-level="easy">Easy</div>
+        <div class="skill-segment" data-level="medium">Medium</div>
+        <div class="skill-segment" data-level="hard">Hard</div>
+        <div class="skill-segment" data-level="expert">Expert</div>
+      </div>
+      <span class="skill-meter-sub" id="skillMeterSub">Complete challenges to calibrate</span>
+    </div>
+  </div>
+
+  <!-- Level selector -->
+  <div class="level-bar">
+    <button class="level-btn active" id="lvlBtn-beginner" onclick="manualSetLevel('beginner', this)">🌱 Beginner</button>
+    <button class="level-btn" id="lvlBtn-easy" onclick="manualSetLevel('easy', this)">⚡ Easy</button>
+    <button class="level-btn" id="lvlBtn-medium" onclick="manualSetLevel('medium', this)">🔥 Medium</button>
+    <button class="level-btn" id="lvlBtn-hard" onclick="manualSetLevel('hard', this)">💀 Hard</button>
+    <button class="level-btn" id="lvlBtn-expert" onclick="manualSetLevel('expert', this)">🏆 Expert</button>
+    <div class="ai-auto-badge" id="aiAutoBadge">🤖 AI Auto-Adjusting</div>
+  </div>
+
+  <div class="layout">
+    <!-- Main challenge area -->
+    <div class="main-content">
+      <div class="challenge-card" id="challengeCard">
+        <div class="card-header">
+          <div>
+            <div class="challenge-meta" id="challengeMeta">
+              <span class="diff-badge diff-beginner" id="diffBadge">Beginner</span>
+              <span class="topic-tag" id="topicTag">Variables &amp; Types</span>
+              <span class="ai-chosen-tag hidden" id="aiChosenTag">🤖 AI Chosen</span>
+            </div>
+            <div style="margin-top: 8px">
+              <span class="challenge-number" id="challengeNum">CHALLENGE #001 · BEGINNER</span>
+            </div>
+          </div>
+          <button class="btn btn-ghost" onclick="generateChallenge()" style="font-size: 12px; padding: 8px 16px;">
+            ↻ New Challenge
+          </button>
+        </div>
+
+        <div class="card-body">
+          <!-- Timer display -->
+          <div class="timer-row" id="timerRow">
+            <span class="timer-icon">⏱</span>
+            <span class="timer-display" id="timerDisplay">00:00</span>
+            <span class="timer-label">Time on challenge</span>
+          </div>
+
+          <div id="loadingChallenge" class="loading-pulse hidden">
+            <div class="pulse-dots">
+              <div class="pulse-dot"></div>
+              <div class="pulse-dot"></div>
+              <div class="pulse-dot"></div>
+            </div>
+            AI is generating your challenge...
+          </div>
+
+          <div id="challengeContent">
+            <h2 class="challenge-title" id="challengeTitle">Loading your first challenge...</h2>
+            <p class="challenge-desc" id="challengeDesc">The AI will calibrate your level as you complete challenges.</p>
+            <div class="code-block" id="codeBlockWrapper">
+              <div class="code-block-header">
+                <div class="code-dot dot-red"></div>
+                <div class="code-dot dot-yellow"></div>
+                <div class="code-dot dot-green"></div>
+                <span style="margin-left: 8px;">Main.java</span>
+              </div>
+              <pre id="codeBlock"><span class="comment">// Your starter code will appear here</span></pre>
+            </div>
+            <button class="hint-toggle" id="hintToggle" onclick="toggleHint()">💡 Show hint</button>
+            <div class="hint-box hidden" id="hintBox">Hint will appear here after you generate a challenge.</div>
+          </div>
+
+          <div class="answer-section" style="margin-top: 24px;">
+            <div class="answer-label">✏️ Your Solution</div>
+            <textarea id="userSolution" placeholder="Write your Java solution here...&#10;&#10;// Example:&#10;public class Main {&#10;    public static void main(String[] args) {&#10;        // your code here&#10;    }&#10;}"></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="submitBtn" onclick="submitSolution()">
+              🚀 Submit &amp; Get Feedback
+            </button>
+            <button class="btn btn-secondary" onclick="clearSolution()">🗑 Clear</button>
+          </div>
+
+          <div id="feedbackPanel" class="hidden" style="margin-top: 24px;">
+            <div class="feedback-panel">
+              <div class="feedback-header">🤖 AI Sensei Feedback</div>
+              <div id="feedbackLoading" class="loading-pulse hidden">
+                <div class="pulse-dots">
+                  <div class="pulse-dot"></div>
+                  <div class="pulse-dot"></div>
+                  <div class="pulse-dot"></div>
+                </div>
+                Analyzing your solution &amp; skill signals...
+              </div>
+              <div class="feedback-body" id="feedbackBody"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- AI Skill Card -->
+      <div class="stat-card ai-skill-card">
+        <div class="stat-title">🧠 AI Skill Profile</div>
+        <div class="skill-profile-grid">
+          <div class="skill-stat">
+            <div class="skill-stat-val" id="statSolved">0</div>
+            <div class="skill-stat-lbl">Solved</div>
+          </div>
+          <div class="skill-stat">
+            <div class="skill-stat-val" id="statAvgScore">—</div>
+            <div class="skill-stat-lbl">Avg Score</div>
+          </div>
+          <div class="skill-stat">
+            <div class="skill-stat-val" id="statAvgTime">—</div>
+            <div class="skill-stat-lbl">Avg Time</div>
+          </div>
+          <div class="skill-stat">
+            <div class="skill-stat-val" id="statLevelUps">0</div>
+            <div class="skill-stat-lbl">Level Ups</div>
+          </div>
+        </div>
+        <div class="skill-confidence">
+          <div class="skill-conf-row">
+            <span style="font-size:12px; color: var(--text-muted)">AI Confidence</span>
+            <span style="font-size:12px; color: var(--java-amber); font-family:'Space Mono',monospace" id="aiConfidence">Low</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="aiConfBar" style="width:5%"></div>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px" id="aiConfDesc">Need 3+ challenges to calibrate</div>
+        </div>
+      </div>
+
+      <!-- XP & Score -->
+      <div class="stat-card">
+        <div class="stat-title">⚡ Your Progress</div>
+        <div class="score-display" id="xpDisplay">0</div>
+        <div class="score-label">XP earned today</div>
+        <div style="margin-top: 20px;">
+          <div class="xp-row">
+            <span style="font-size:13px; color: var(--text-muted);">Level Progress</span>
+            <span style="font-size:13px; font-family: 'Space Mono', monospace; color: var(--java-amber);" id="levelLabel">Novice</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="xpBar" style="width: 0%"></div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); text-align: right;" id="xpNext">0 / 100 XP to next level</div>
+        </div>
+      </div>
+
+      <!-- Roadmap -->
+      <div class="stat-card">
+        <div class="stat-title">🗺 Java Roadmap</div>
+        <div id="roadmapList">
+          <div class="roadmap-item current" onclick="manualSetLevel('beginner', null, 'Variables & Types')">
+            <div class="roadmap-dot current-dot"></div>
+            <span class="roadmap-label">Variables &amp; Types</span>
+            <span class="roadmap-count">10 ch</span>
+          </div>
+          <div class="roadmap-item" onclick="manualSetLevel('beginner', null, 'Control Flow')">
+            <div class="roadmap-dot upcoming"></div>
+            <span class="roadmap-label">Control Flow</span>
+            <span class="roadmap-count">12 ch</span>
+          </div>
+          <div class="roadmap-item" onclick="manualSetLevel('easy', null, 'Arrays & Strings')">
+            <div class="roadmap-dot upcoming"></div>
+            <span class="roadmap-label">Arrays &amp; Strings</span>
+            <span class="roadmap-count">15 ch</span>
+          </div>
+          <div class="roadmap-item" onclick="manualSetLevel('easy', null, 'OOP Basics')">
+            <div class="roadmap-dot upcoming"></div>
+            <span class="roadmap-label">OOP Basics</span>
+            <span class="roadmap-count">20 ch</span>
+          </div>
+          <div class="roadmap-item" onclick="manualSetLevel('medium', null, 'Collections & Generics')">
+            <div class="roadmap-dot upcoming"></div>
+            <span class="roadmap-label">Collections &amp; Generics</span>
+            <span class="roadmap-count">18 ch</span>
+          </div>
+          <div class="roadmap-item" onclick="manualSetLevel('medium', null, 'Exception Handling')">
+            <div class="roadmap-dot upcoming"></div>
+            <span class="roadmap-label">Exception Handling</span>
+            <span class="roadmap-count">10 ch</span>
+          </div>
+          <div class="roadmap-item" onclick="manualSetLevel('hard', null, 'Streams & Lambdas')">
+            <div class="roadmap-dot upcoming"></div>
+            <span class="roadmap-label">Streams &amp; Lambdas</span>
+            <span class="roadmap-count">15 ch</span>
+          </div>
+          <div class="roadmap-item" onclick="manualSetLevel('hard', null, 'Concurrency')">
+            <div class="roadmap-dot upcoming"></div>
+            <span class="roadmap-label">Concurrency</span>
+            <span class="roadmap-count">14 ch</span>
+          </div>
+          <div class="roadmap-item" onclick="manualSetLevel('expert', null, 'Design Patterns')">
+            <div class="roadmap-dot upcoming"></div>
+            <span class="roadmap-label">Design Patterns</span>
+            <span class="roadmap-count">20 ch</span>
+          </div>
+          <div class="roadmap-item" onclick="manualSetLevel('expert', null, 'JVM Internals')">
+            <div class="roadmap-dot upcoming"></div>
+            <span class="roadmap-label">JVM Internals</span>
+            <span class="roadmap-count">12 ch</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tip -->
+      <div class="stat-card">
+        <div class="stat-title">💡 Pro Tip</div>
+        <div style="font-size: 14px; color: var(--text-dim); line-height: 1.65;" id="proTip">
+          Start each challenge by reading the problem twice before writing a single line of code. Understand <em>what</em> before <em>how</em>.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ────────────────────────────────────────
+  let currentLevel = 'beginner';
+  let currentTopic = 'Variables & Types';
+  let currentChallenge = null;
+  let xp = 0;
+  let challengeCount = 0;
+  let streak = 0;
+  let aiAutoMode = true;
+
+  // Timer
+  let timerInterval = null;
+  let challengeStartTime = null;
+  let elapsedSeconds = 0;
+
+  // ── AI Skill Engine ──────────────────────────────
+  // Tracks performance history to determine real skill level
+  let performanceLog = [];   // { score, timeSeconds, level }
+  let aiDetectedLevel = 'beginner';
+  let levelUps = 0;
+
+  const levelOrder = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+
+  const levelThresholds = {
+    // [minAvgScore, maxAvgTime(sec)] to STAY at this level
+    // If avg score >= minAvgScore AND avg time <= maxAvgTime → consider upgrading
+    beginner: { upgradeScore: 7, upgradeTime: 300 },  // score 7+, under 5min
+    easy:     { upgradeScore: 7, upgradeTime: 480 },  // score 7+, under 8min
+    medium:   { upgradeScore: 7, upgradeTime: 600 },  // score 7+, under 10min
+    hard:     { upgradeScore: 7, upgradeTime: 720 },  // score 7+, under 12min
+    expert:   { upgradeScore: 0, upgradeTime: 99999 } // already max
+  };
+
+  // ── Constants ────────────────────────────────────
+  const levels = {
+    beginner: { label: 'Beginner', cls: 'diff-beginner' },
+    easy:     { label: 'Easy',     cls: 'diff-easy'     },
+    medium:   { label: 'Medium',   cls: 'diff-medium'   },
+    hard:     { label: 'Hard',     cls: 'diff-hard'     },
+    expert:   { label: 'Expert',   cls: 'diff-expert'   }
+  };
+
+  const xpLevels = [
+    { name: 'Novice',      min: 0,    max: 100  },
+    { name: 'Apprentice',  min: 100,  max: 300  },
+    { name: 'Journeyman',  min: 300,  max: 600  },
+    { name: 'Adept',       min: 600,  max: 1000 },
+    { name: 'Master',      min: 1000, max: 1500 },
+    { name: 'Grandmaster', min: 1500, max: 2500 },
+    { name: 'Sensei',      min: 2500, max: 99999 }
+  ];
+
+  const xpReward = { beginner: 10, easy: 20, medium: 35, hard: 50, expert: 75 };
+
+  const tips = [
+    "Write pseudocode first, then translate to Java.",
+    "Use System.out.println() liberally while debugging — remove after.",
+    "Name variables clearly. <code>userAge</code> beats <code>x</code> every time.",
+    "Read error messages top-to-bottom. The first line is usually the culprit.",
+    "Practice typing code from scratch — muscle memory matters.",
+    "Use the Java Docs — the ground truth for the standard library.",
+    "Understand the difference between <code>==</code> and <code>.equals()</code> for objects.",
+    "Every problem can be broken down. Start with the simplest version.",
+    "Don't memorize syntax — understand concepts. Google is always there.",
+    "Test edge cases: empty input, null, zero, very large numbers."
+  ];
+
+  // ── Timer ────────────────────────────────────────
+  function startTimer() {
+    stopTimer();
+    elapsedSeconds = 0;
+    challengeStartTime = Date.now();
+    timerInterval = setInterval(() => {
+      elapsedSeconds = Math.floor((Date.now() - challengeStartTime) / 1000);
+      const m = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+      const s = String(elapsedSeconds % 60).padStart(2, '0');
+      document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+      // Turn timer red if taking very long
+      const timerEl = document.getElementById('timerDisplay');
+      if (elapsedSeconds > 600) timerEl.style.color = 'var(--java-red)';
+      else if (elapsedSeconds > 300) timerEl.style.color = 'var(--java-amber)';
+      else timerEl.style.color = 'var(--accent-green)';
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  }
+
+  // ── AI Skill Engine ──────────────────────────────
+  function recordPerformance(score, timeSeconds, level) {
+    performanceLog.push({ score, timeSeconds, level, ts: Date.now() });
+    // Keep last 10 entries for rolling window
+    if (performanceLog.length > 10) performanceLog.shift();
+    analyzeAndAdjust();
+  }
+
+  function analyzeAndAdjust() {
+    if (performanceLog.length < 2) {
+      updateAIConfidence(performanceLog.length, 'Need more data');
+      return;
+    }
+
+    // Rolling average of last 5 entries at current level
+    const recent = performanceLog.filter(p => p.level === aiDetectedLevel).slice(-5);
+    if (recent.length < 2) {
+      updateAIConfidence(performanceLog.length, 'Gathering data at this level...');
+      return;
+    }
+
+    const avgScore = recent.reduce((s, p) => s + p.score, 0) / recent.length;
+    const avgTime  = recent.reduce((s, p) => s + p.timeSeconds, 0) / recent.length;
+    const threshold = levelThresholds[aiDetectedLevel];
+    const currentIdx = levelOrder.indexOf(aiDetectedLevel);
+
+    // Confidence grows with data points
+    const conf = Math.min(recent.length / 5, 1);
+    const confLabel = conf < 0.4 ? 'Low' : conf < 0.7 ? 'Medium' : 'High';
+    updateAIConfidence(conf * 100, confLabel);
+
+    // Check for upgrade condition
+    if (
+      currentIdx < levelOrder.length - 1 &&
+      avgScore >= threshold.upgradeScore &&
+      avgTime  <= threshold.upgradeTime &&
+      recent.length >= 3
+    ) {
+      const oldLevel = aiDetectedLevel;
+      aiDetectedLevel = levelOrder[currentIdx + 1];
+      levelUps++;
+      if (aiAutoMode) {
+        currentLevel = aiDetectedLevel;
+        syncLevelButtons();
+        triggerLevelUpCelebration(oldLevel, aiDetectedLevel, avgScore, avgTime);
+      }
+    }
+
+    // Check for downgrade if struggling (avg score < 4)
+    if (avgScore < 4 && currentIdx > 0 && recent.length >= 3) {
+      aiDetectedLevel = levelOrder[currentIdx - 1];
+      if (aiAutoMode) {
+        currentLevel = aiDetectedLevel;
+        syncLevelButtons();
+      }
+    }
+
+    updateAISkillDisplay();
+    updateSkillStats();
+  }
+
+  function updateAIConfidence(pct, label) {
+    document.getElementById('aiConfidence').textContent = label;
+    document.getElementById('aiConfBar').style.width = Math.min(pct, 100) + '%';
+    const solved = performanceLog.length;
+    const needed = Math.max(0, 3 - solved);
+    document.getElementById('aiConfDesc').textContent =
+      needed > 0 ? `Need ${needed} more challenge${needed > 1 ? 's' : ''} to calibrate` :
+      `Based on your last ${Math.min(solved, 5)} challenges`;
+  }
+
+  function updateAISkillDisplay() {
+    document.getElementById('aiSkillLabel').textContent = levels[aiDetectedLevel].label;
+
+    // Highlight active segment on meter
+    document.querySelectorAll('.skill-segment').forEach(seg => {
+      seg.classList.remove('active', 'passed');
+      const segLevel = seg.getAttribute('data-level');
+      const segIdx = levelOrder.indexOf(segLevel);
+      const curIdx = levelOrder.indexOf(aiDetectedLevel);
+      if (segLevel === aiDetectedLevel) seg.classList.add('active');
+      else if (segIdx < curIdx) seg.classList.add('passed');
+    });
+
+    // Update stat cards
+    document.getElementById('statLevelUps').textContent = levelUps;
+  }
+
+  function updateSkillStats() {
+    const solved = performanceLog.length;
+    document.getElementById('statSolved').textContent = solved;
+    if (solved > 0) {
+      const avgScore = Math.round(performanceLog.reduce((s,p) => s + p.score, 0) / solved * 10) / 10;
+      const avgTime  = Math.round(performanceLog.reduce((s,p) => s + p.timeSeconds, 0) / solved);
+      document.getElementById('statAvgScore').textContent = avgScore + '/10';
+      const m = Math.floor(avgTime / 60), s = avgTime % 60;
+      document.getElementById('statAvgTime').textContent = `${m}m${s}s`;
+    }
+  }
+
+  function syncLevelButtons() {
+    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById('lvlBtn-' + currentLevel);
+    if (activeBtn) activeBtn.classList.add('active');
+  }
+
+  // ── Level Up Celebration ─────────────────────────
+  function triggerLevelUpCelebration(fromLevel, toLevel, avgScore, avgTime) {
+    const overlay = document.getElementById('levelupOverlay');
+    const fromLabel = levels[fromLevel].label;
+    const toLabel   = levels[toLevel].label;
+    const mins = Math.floor(avgTime / 60);
+    const secs = avgTime % 60;
+
+    document.getElementById('levelupFrom').textContent = fromLabel;
+    document.getElementById('levelupTo').textContent   = toLabel;
+    document.getElementById('levelupTitle').textContent = `${toLabel} Unlocked!`;
+    document.getElementById('levelupSubtitle').textContent = 'The AI has recognized your growth.';
+    document.getElementById('levelupDesc').textContent =
+      `Avg score ${avgScore.toFixed(1)}/10 in ~${mins}m${secs}s — you're ready for bigger challenges!`;
+
+    // Spawn particles
+    spawnParticles();
+
+    overlay.classList.remove('hidden');
+    overlay.classList.add('visible');
+  }
+
+  function spawnParticles() {
+    const container = document.getElementById('levelupParticles');
+    container.innerHTML = '';
+    const colors = ['#f97316','#fbbf24','#4ade80','#38bdf8','#a78bfa'];
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.cssText = `
+        left: ${Math.random() * 100}%;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        width: ${4 + Math.random() * 8}px;
+        height: ${4 + Math.random() * 8}px;
+        animation-delay: ${Math.random() * 0.5}s;
+        animation-duration: ${1 + Math.random() * 1.5}s;
+      `;
+      container.appendChild(p);
+    }
+  }
+
+  function closeLevelUp() {
+    const overlay = document.getElementById('levelupOverlay');
+    overlay.classList.remove('visible');
+    setTimeout(() => overlay.classList.add('hidden'), 300);
+    generateChallenge(); // auto-load new challenge at upgraded level
+  }
+
+  // ── Level Controls ───────────────────────────────
+  function manualSetLevel(level, btnEl, topic) {
+    currentLevel = level;
+    aiAutoMode = false; // user took manual control
+    document.getElementById('aiAutoBadge').classList.remove('active');
+    if (topic) currentTopic = topic;
+    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+    else syncLevelButtons();
+    generateChallenge();
+  }
+
+  // ── Generate Challenge ───────────────────────────
+  async function generateChallenge() {
+    challengeCount++;
+    stopTimer();
+
+    document.getElementById('loadingChallenge').classList.remove('hidden');
+    document.getElementById('challengeContent').style.opacity = '0.3';
+    document.getElementById('feedbackPanel').classList.add('hidden');
+    document.getElementById('userSolution').value = '';
+    document.getElementById('hintBox').classList.add('hidden');
+    document.getElementById('hintToggle').textContent = '💡 Show hint';
+    document.getElementById('timerDisplay').textContent = '00:00';
+    document.getElementById('timerDisplay').style.color = 'var(--accent-green)';
+
+    const tip = tips[Math.floor(Math.random() * tips.length)];
+    document.getElementById('proTip').innerHTML = tip;
+
+    const levelInfo = levels[currentLevel];
+    const dayNum = String(challengeCount).padStart(3, '0');
+    document.getElementById('challengeNum').textContent = `CHALLENGE #${dayNum} · ${currentLevel.toUpperCase()}`;
+
+    const badge = document.getElementById('diffBadge');
+    badge.textContent = levelInfo.label;
+    badge.className = `diff-badge ${levelInfo.cls}`;
+    document.getElementById('topicTag').textContent = currentTopic;
+
+    // Show AI chosen tag if auto mode
+    if (aiAutoMode && performanceLog.length >= 2) {
+      document.getElementById('aiChosenTag').classList.remove('hidden');
+    } else {
+      document.getElementById('aiChosenTag').classList.add('hidden');
+    }
+
+    const prompt = `You are a Java programming challenge generator for an AI-adaptive daily challenge platform.
+
+Generate a Java programming challenge at the "${currentLevel}" level, specifically about the topic: "${currentTopic}".
+
+Respond ONLY in this exact JSON format (no markdown, no extra text):
+{
+  "title": "challenge title (short, punchy)",
+  "description": "2-3 sentence problem description. Include constraints and what to implement.",
+  "starterCode": "// Java starter code with class structure. Use HTML entities: & as &amp; < as &lt; > as &gt;",
+  "hint": "One practical hint to nudge in right direction without giving away the answer"
+}
+
+Level guidelines:
+- beginner: Hello World, variables, basic math, String operations, simple if/else
+- easy: loops, arrays, basic methods, simple algorithms (sum, max, reverse)
+- medium: OOP, collections, recursion, sorting algorithms, String manipulation
+- hard: streams, lambdas, generics, design patterns, data structures (trees, graphs)
+- expert: concurrency, JVM concepts, advanced patterns, memory optimization, complex algorithms
+
+Make it practical, real-world relevant, and solvable in 5-20 minutes.`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      const raw = data.content[0].text.replace(/```json|```/g, '').trim();
+      const challenge = JSON.parse(raw);
+
+      currentChallenge = challenge;
+      document.getElementById('challengeTitle').textContent = challenge.title;
+      document.getElementById('challengeDesc').textContent = challenge.description;
+      document.getElementById('codeBlock').innerHTML = formatJavaCode(challenge.starterCode);
+      document.getElementById('hintBox').textContent = challenge.hint;
+
+      startTimer(); // start timing after challenge loads
+
+    } catch (err) {
+      document.getElementById('challengeTitle').textContent = 'Could not load challenge';
+      document.getElementById('challengeDesc').textContent = 'Please check your connection and try again.';
+      document.getElementById('codeBlock').innerHTML = '<span class="comment">// Error loading challenge</span>';
+    }
+
+    document.getElementById('loadingChallenge').classList.add('hidden');
+    document.getElementById('challengeContent').style.opacity = '1';
+  }
+
+  // ── Submit Solution ──────────────────────────────
+  async function submitSolution() {
+    const solution = document.getElementById('userSolution').value.trim();
+    if (!solution) {
+      document.getElementById('userSolution').focus();
+      document.getElementById('userSolution').style.borderColor = 'rgba(239,68,68,0.5)';
+      setTimeout(() => document.getElementById('userSolution').style.borderColor = '', 1500);
+      return;
+    }
+    if (!currentChallenge) { alert('Please generate a challenge first!'); return; }
+
+    stopTimer(); // stop timer on submit
+    const solveTime = elapsedSeconds;
+
+    document.getElementById('feedbackPanel').classList.remove('hidden');
+    document.getElementById('feedbackLoading').classList.remove('hidden');
+    document.getElementById('feedbackBody').innerHTML = '';
+    document.getElementById('submitBtn').disabled = true;
+
+    const prompt = `You are an expert Java programming tutor reviewing a student's solution for an AI-adaptive learning platform.
+
+Challenge level: ${currentLevel}
+Challenge title: "${currentChallenge.title}"
+Challenge description: "${currentChallenge.description}"
+Time taken: ${Math.floor(solveTime/60)}m ${solveTime%60}s
+
+Student's solution:
+\`\`\`java
+${solution}
+\`\`\`
+
+Provide constructive feedback AND at the very end output a machine-readable score line in EXACTLY this format:
+SCORE: X
+where X is a whole number from 1-10.
+
+Structure your feedback as:
+## ✅ What You Got Right
+[Specific praise]
+
+## 🔧 Improvements Needed
+[Specific issues if any]
+
+## 💡 Tips & Tricks for This Pattern
+[2-3 practical Java tips for this problem type]
+
+## 🚀 Optimized Approach
+[Cleaner version if applicable]
+
+## 🎯 Score
+[One sentence verdict]
+
+SCORE: X
+
+Be encouraging, specific, and educational.`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      const feedbackText = data.content[0].text;
+
+      // Extract score from AI response
+      const scoreMatch = feedbackText.match(/SCORE:\s*(\d+)/);
+      const score = scoreMatch ? parseInt(scoreMatch[1]) : 5;
+
+      // Display feedback (hide the machine score line)
+      const displayText = feedbackText.replace(/\nSCORE:\s*\d+\s*$/, '').trim();
+      document.getElementById('feedbackBody').innerHTML = markdownToHtml(displayText);
+
+      // ── Record performance for AI skill engine ──
+      recordPerformance(score, solveTime, currentLevel);
+
+      // XP
+      const reward = xpReward[currentLevel] || 10;
+      xp += reward;
+      updateXP();
+
+      // Streak
+      streak++;
+      document.getElementById('streakCount').textContent = streak;
+      try { localStorage.setItem('jq_streak', streak); } catch(e) {}
+
+    } catch (err) {
+      document.getElementById('feedbackBody').innerHTML = '<p style="color: var(--java-red)">Could not get feedback. Please try again.</p>';
+    }
+
+    document.getElementById('feedbackLoading').classList.add('hidden');
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('feedbackPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ── XP ───────────────────────────────────────────
+  function updateXP() {
+    document.getElementById('xpDisplay').textContent = xp;
+    const level = xpLevels.find(l => xp >= l.min && xp < l.max) || xpLevels[xpLevels.length - 1];
+    const progress = ((xp - level.min) / (level.max - level.min)) * 100;
+    document.getElementById('xpBar').style.width = Math.min(progress, 100) + '%';
+    document.getElementById('levelLabel').textContent = level.name;
+    document.getElementById('xpNext').textContent = `${xp} / ${level.max} XP to next level`;
+  }
+
+  // ── Hint ─────────────────────────────────────────
+  function toggleHint() {
+    const box = document.getElementById('hintBox');
+    const toggle = document.getElementById('hintToggle');
+    if (box.classList.contains('hidden')) {
+      box.classList.remove('hidden');
+      toggle.textContent = '🙈 Hide hint';
+    } else {
+      box.classList.add('hidden');
+      toggle.textContent = '💡 Show hint';
+    }
+  }
+
+  function clearSolution() {
+    document.getElementById('userSolution').value = '';
+    document.getElementById('feedbackPanel').classList.add('hidden');
+    document.getElementById('userSolution').focus();
+  }
+
+  // ── Code Formatter ───────────────────────────────
+  function formatJavaCode(code) {
+    code = code.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    code = code.replace(/(\/\/[^\n]*)/g, '<span class="comment">$1</span>');
+    code = code.replace(/\b(public|private|protected|static|final|void|class|interface|extends|implements|new|return|if|else|for|while|do|switch|case|break|continue|import|package|throws|throw|try|catch|finally|this|super|abstract|synchronized|volatile|transient)\b/g, '<span class="kw">$1</span>');
+    code = code.replace(/\b(int|long|double|float|boolean|char|byte|short|String|Integer|Long|Double|Boolean|Object|List|Map|Set|Array|ArrayList|HashMap|void)\b/g, '<span class="type">$1</span>');
+    code = code.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>');
+    code = code.replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>');
+    return code;
+  }
+
+  function markdownToHtml(text) {
+    return text
+      .replace(/## (.+)/g, '<h3>$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/^\- (.+)/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/^(?!<[hul])/gm, '')
+      .replace(/\n/g, '<br>');
+  }
+
+  // ── Auth ─────────────────────────────────────────
+  function openModal(tab) {
+    document.getElementById('modalOverlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    switchTab(tab);
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.add('hidden');
+    document.body.style.overflow = '';
+    clearForms();
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  function switchTab(tab) {
+    ['formLogin','formSignup','formSuccess'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    ['tabLogin','tabSignup'].forEach(id => document.getElementById(id).classList.remove('active'));
+    if (tab === 'login') {
+      document.getElementById('formLogin').classList.remove('hidden');
+      document.getElementById('tabLogin').classList.add('active');
+    } else {
+      document.getElementById('formSignup').classList.remove('hidden');
+      document.getElementById('tabSignup').classList.add('active');
+    }
+  }
+
+  function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const errorEl = document.getElementById('loginError');
+    if (!email || !password) {
+      errorEl.textContent = '⚠ Please enter your email and password.';
+      errorEl.classList.remove('hidden'); return;
+    }
+    const users = JSON.parse(localStorage.getItem('jq_users') || '[]');
+    const user = users.find(u => u.email === email && u.password === password);
+    if (!user) {
+      errorEl.textContent = '⚠ Invalid email or password.';
+      errorEl.classList.remove('hidden'); return;
+    }
+    errorEl.classList.add('hidden');
+    setLoggedIn(user.username);
+    showSuccess('Welcome back, ' + user.username + '!', 'Ready to continue your quest?');
+  }
+
+  function handleSignup() {
+    const username = document.getElementById('signupUsername').value.trim();
+    const email    = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value.trim();
+    const confirm  = document.getElementById('signupConfirm').value.trim();
+    const errorEl  = document.getElementById('signupError');
+    if (!username || !email || !password || !confirm) {
+      errorEl.textContent = '⚠ Please fill in all fields.';
+      errorEl.classList.remove('hidden'); return;
+    }
+    if (password.length < 8) {
+      errorEl.textContent = '⚠ Password must be at least 8 characters.';
+      errorEl.classList.remove('hidden'); return;
+    }
+    if (password !== confirm) {
+      errorEl.textContent = '⚠ Passwords do not match.';
+      errorEl.classList.remove('hidden'); return;
+    }
+    const users = JSON.parse(localStorage.getItem('jq_users') || '[]');
+    if (users.find(u => u.email === email)) {
+      errorEl.textContent = '⚠ An account with this email already exists.';
+      errorEl.classList.remove('hidden'); return;
+    }
+    users.push({ username, email, password });
+    try { localStorage.setItem('jq_users', JSON.stringify(users)); } catch(e) {}
+    errorEl.classList.add('hidden');
+    setLoggedIn(username);
+    showSuccess('Welcome, ' + username + '!', 'Your account is ready. Let the quest begin!');
+  }
+
+  function setLoggedIn(username) {
+    document.getElementById('authButtons').classList.add('hidden');
+    document.getElementById('userInfo').classList.remove('hidden');
+    document.getElementById('userName').textContent = username;
+    document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+    try { localStorage.setItem('jq_currentUser', username); } catch(e) {}
+  }
+
+  function logout() {
+    document.getElementById('authButtons').classList.remove('hidden');
+    document.getElementById('userInfo').classList.add('hidden');
+    try { localStorage.removeItem('jq_currentUser'); } catch(e) {}
+  }
+
+  function showSuccess(title, msg) {
+    ['formLogin','formSignup'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById('successTitle').textContent = title;
+    document.getElementById('successMsg').textContent = msg;
+    document.getElementById('formSuccess').classList.remove('hidden');
+  }
+
+  function clearForms() {
+    ['loginEmail','loginPassword','signupUsername','signupEmail','signupPassword','signupConfirm']
+      .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    ['loginError','signupError'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  }
+
+  // ── Init ─────────────────────────────────────────
+  window.addEventListener('load', () => {
+    try {
+      streak = parseInt(localStorage.getItem('jq_streak') || '0');
+      document.getElementById('streakCount').textContent = streak;
+      const saved = localStorage.getItem('jq_currentUser');
+      if (saved) setLoggedIn(saved);
+    } catch(e) {}
+
+    updateAISkillDisplay();
+    document.getElementById('aiAutoBadge').classList.add('active');
+    setTimeout(generateChallenge, 300);
+  });
+</script>
+</body>
+</html>
